@@ -57,6 +57,9 @@ int main(int argc, char* argv[]) {
     int procs = atoi(argv[6]);
     int i, j, k;
     
+    if (argc > 7)
+      omp_set_num_threads(atoi(argv[6]));
+
     file >> n_partic;
     file >> size_x;
     file >> size_y;
