@@ -86,11 +86,11 @@ int main(int argc, char* argv[]) {
     {
         tid = omp_get_thread_num();
         x = 0; y = 0; fx = 0; fy = 0; rodada = 0; distancia = 0; distancia_sqr = 0; k = 0;
-        for(i = 0; i < 10; ++i) {
+        for(i = 0; i < iters; ++i) {
             rodada = !rodada;
             //printf("%d",tid);
-            //if(i%25000 == 0 || i > 2499900)
-            //    printf("Iteracao %d\n", i);
+            if(tid==0 && (i%25000 == 0 || i > 2499990))
+                printf("Iteracao %d\n", i);
             #pragma omp for
             for(j = 0; j < n_partic; ++j) {
                 forcas[j].x(0);
@@ -132,20 +132,20 @@ int main(int argc, char* argv[]) {
                 particulas[rodada][j].y += particulas[rodada][j].vy*tau;
                 if(particulas[rodada][j].x > size_x) {
                     particulas[rodada][j].x = 2*size_x - particulas[rodada][j].x;
-                    particulas[rodada][j].vx /= 2;
+                    particulas[rodada][j].vx *= -0.5;
                 }
                 else if(particulas[rodada][j].x < 0) {
                     particulas[rodada][j].x *= -1;
-                    particulas[rodada][j].vx /= 2;
+                    particulas[rodada][j].vx *= -0.5;
                 }
                 
                 if(particulas[rodada][j].y > size_y) {
                     particulas[rodada][j].y = 2*size_y - particulas[rodada][j].y;
-                    particulas[rodada][j].vy /= 2;
+                    particulas[rodada][j].vy *= -0.5;
                 }
                 else if(particulas[rodada][j].y < 0) {
                     particulas[rodada][j].y *= -1;
-                    particulas[rodada][j].vy /= 2;
+                    particulas[rodada][j].vy *= -0.5;
                 }
                 
             }
