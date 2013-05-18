@@ -52,7 +52,6 @@ typedef struct part particula;
 int main(int argc, char* argv[]) {
     double x, y, distancia_sqr, distancia, forca = 0;
     int i, j, k, tid;
-    bool bounce = false;
     std::ifstream file(argv[1], std::ifstream::in);
     if(!file) return 1;
     int n_partic = 0;
@@ -83,10 +82,10 @@ int main(int argc, char* argv[]) {
         printf("\t%f %f %f %f %f %f\n", particulas[i].x, particulas[i].y, particulas[i].vx, particulas[i].vy, particulas[i].carga,particulas[i].raio);
     printf("\n\n");
     
-    #pragma omp parallel private(i, j, k, x, y, distancia, distancia_sqr, bounce, tid)
+    #pragma omp parallel private(i, j, k, x, y, distancia, distancia_sqr, tid)
     {
         tid = omp_get_thread_num();
-        x = 0; y = 0; distancia = 0; distancia_sqr = 0; k = 0; bounce = false;
+        x = 0; y = 0; distancia = 0; distancia_sqr = 0; k = 0;
         for(i = 0; i < iters; ++i) {
             //printf("%d",tid);
             //if(i%25000 == 0 || i > 2499900)
@@ -127,26 +126,22 @@ int main(int argc, char* argv[]) {
                 particulas[j].y += particulas[j].vy*tau;
                 if(particulas[j].x > size_x) {
                     particulas[j].x = 2*size_x - particulas[j].x;
-                    bounce = true;
+		    particulas[j].vx /= 2;
                 }
                 else if(particulas[j].x < 0) {
                     particulas[j].x *= -1;
-                    bounce = true;
+		    particulas[j].vx /= 2;
                 }
                 
                 if(particulas[j].y > size_y) {
                     particulas[j].y = 2*size_y - particulas[j].y;
-                    bounce = true;
-                }
+                    particulas[j].vy /= 2;
+		}
                 else if(particulas[j].y < 0) {
                     particulas[j].y *= -1;
-                    bounce = true;
+		    particulas[j].vy /= 2;
                 }
-                if(bounce) {
-                    bounce = false;
-                    particulas[j].vx /= 2;
-                    particulas[j].vy /= 2;
-                }
+                
             }
         }
     }
