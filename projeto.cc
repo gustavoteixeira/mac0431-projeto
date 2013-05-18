@@ -82,12 +82,12 @@ int main(int argc, char* argv[]) {
         printf("\t%f %f %f %f %f %f\n", particulas[rodada][i].x, particulas[rodada][i].y, particulas[rodada][i].vx, particulas[rodada][i].vy, particulas[rodada][i].carga,particulas[rodada][i].raio);
     printf("\n\n");
     
-    #pragma omp parallel private(i, j, k, x, y, distancia, distancia_sqr, tid)
+    #pragma omp parallel private(i, j, k, x, y, distancia, distancia_sqr, tid, rodada, fx, fy)
     {
         tid = omp_get_thread_num();
-        x = 0; y = 0; distancia = 0; distancia_sqr = 0; k = 0;
-        for(i = 0; i < iters; ++i) {
-	    rodada = !rodada;
+        x = 0; y = 0; fx = 0; fy = 0; rodada = 0; distancia = 0; distancia_sqr = 0; k = 0;
+        for(i = 0; i < 10; ++i) {
+            rodada = !rodada;
             //printf("%d",tid);
             //if(i%25000 == 0 || i > 2499900)
             //    printf("Iteracao %d\n", i);
@@ -95,10 +95,11 @@ int main(int argc, char* argv[]) {
             for(j = 0; j < n_partic; ++j) {
                 forcas[j].x(0);
                 forcas[j].y(0);
+                #pragma omp critical
                 particulas[rodada][j].vx = particulas[!rodada][j].vx;
                 particulas[rodada][j].vy = particulas[!rodada][j].vy;
-		particulas[rodada][j].x = particulas[!rodada][j].x;
-		particulas[rodada][j].y = particulas[!rodada][j].y;
+                particulas[rodada][j].x = particulas[!rodada][j].x;
+                particulas[rodada][j].y = particulas[!rodada][j].y;
                 
                 for(k = 0; k < n_partic; ++k) {
                     if(j == k)
@@ -110,9 +111,9 @@ int main(int argc, char* argv[]) {
                     if(distancia > epsilon || distancia < particulas[!rodada][k].raio+particulas[0][j].raio)
                         continue;
                     forca = c/distancia_sqr;
-		    fx = -(x/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
-		    fy = -(y/distancia_sqr)*forca*tau*particulas[0][k].carga*particulas[0][k].carga;
-		    forcas[j].add(fx, fy);
+                    fx = -(x/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
+                    fy = -(y/distancia_sqr)*forca*tau*particulas[0][k].carga*particulas[0][k].carga;
+                    forcas[j].add(fx, fy);
                 }
                 particulas[rodada][j].vx = particulas[!rodada][j].vx + forcas[j].x();
                 particulas[rodada][j].vy = particulas[!rodada][j].vy + forcas[j].y();
@@ -122,28 +123,29 @@ int main(int argc, char* argv[]) {
                 printf("Iter %d:\n", i);
                 for(j = 0; j < n_partic; ++j)
                     printf("\t%f %f %f %f %f %f\n", particulas[rodada][j].x, particulas[rodada][j].y, particulas[rodada][j].vx, particulas[rodada][j].vy, particulas[rodada][j].carga, particulas[rodada][j].raio);
-            }*/
-            //#pragma omp barrier
+            }
+            #pragma omp barrier
+            */
             #pragma omp for
             for(j = 0; j < n_partic; ++j) {
                 particulas[rodada][j].x += particulas[rodada][j].vx*tau;
                 particulas[rodada][j].y += particulas[rodada][j].vy*tau;
                 if(particulas[rodada][j].x > size_x) {
                     particulas[rodada][j].x = 2*size_x - particulas[rodada][j].x;
-		    particulas[rodada][j].vx /= 2;
+                    particulas[rodada][j].vx /= 2;
                 }
                 else if(particulas[rodada][j].x < 0) {
                     particulas[rodada][j].x *= -1;
-		    particulas[rodada][j].vx /= 2;
+                    particulas[rodada][j].vx /= 2;
                 }
                 
                 if(particulas[rodada][j].y > size_y) {
                     particulas[rodada][j].y = 2*size_y - particulas[rodada][j].y;
                     particulas[rodada][j].vy /= 2;
-		}
+                }
                 else if(particulas[rodada][j].y < 0) {
                     particulas[rodada][j].y *= -1;
-		    particulas[rodada][j].vy /= 2;
+                    particulas[rodada][j].vy /= 2;
                 }
                 
             }
