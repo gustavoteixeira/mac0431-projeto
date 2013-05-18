@@ -103,9 +103,7 @@ int main(int argc, char* argv[]) {
                     y = (particulas[k].y - particulas[j].y);
                     distancia_sqr = x*x + y*y;
                     distancia = sqrt(distancia_sqr);
-                    if(distancia > epsilon)
-                        continue;
-                    if(distancia < particulas[k].raio+particulas[j].raio)
+                    if(distancia > epsilon || distancia < particulas[k].raio+particulas[j].raio)
                         continue;
                     forca = c/distancia_sqr;
                     forcas[j].add(-(x/distancia_sqr)*forca*tau*particulas[j].carga*particulas[k].carga, -(y/distancia_sqr)*forca*tau*particulas[k].carga*particulas[k].carga);
