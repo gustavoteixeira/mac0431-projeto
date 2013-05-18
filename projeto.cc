@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
     double tau = atof(argv[4]);
     int iters = atoi(argv[5]);
     int procs = atoi(argv[6]);
+    double fx, fy;
     
     omp_set_num_threads(procs);
 
@@ -96,6 +97,9 @@ int main(int argc, char* argv[]) {
                 forcas[j].y(0);
                 particulas[rodada][j].vx = particulas[!rodada][j].vx;
                 particulas[rodada][j].vy = particulas[!rodada][j].vy;
+		particulas[rodada][j].x = particulas[!rodada][j].x;
+		particulas[rodada][j].y = particulas[!rodada][j].y;
+                
                 for(k = 0; k < n_partic; ++k) {
                     if(j == k)
                         continue;
@@ -103,10 +107,12 @@ int main(int argc, char* argv[]) {
                     y = (particulas[!rodada][k].y - particulas[rodada][j].y);
                     distancia_sqr = x*x + y*y;
                     distancia = sqrt(distancia_sqr);
-                    if(distancia > epsilon || distancia < particulas[!rodada][k].raio+particulas[rodada][j].raio)
+                    if(distancia > epsilon || distancia < particulas[!rodada][k].raio+particulas[0][j].raio)
                         continue;
                     forca = c/distancia_sqr;
-                    forcas[j].add(-(x/distancia_sqr)*forca*tau*particulas[rodada][j].carga*particulas[rodada][k].carga, -(y/distancia_sqr)*forca*tau*particulas[rodada][k].carga*particulas[rodada][k].carga);
+		    fx = -(x/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
+		    fy = -(y/distancia_sqr)*forca*tau*particulas[0][k].carga*particulas[0][k].carga;
+		    forcas[j].add(fx, fy);
                 }
                 particulas[rodada][j].vx = particulas[!rodada][j].vx + forcas[j].x();
                 particulas[rodada][j].vy = particulas[!rodada][j].vy + forcas[j].y();
