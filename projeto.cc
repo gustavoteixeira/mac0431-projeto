@@ -89,13 +89,12 @@ int main(int argc, char* argv[]) {
         for(i = 0; i < iters; ++i) {
             rodada = !rodada;
             //printf("%d",tid);
-            if(tid==0 && (i%25000 == 0 || i > 2499990))
-                printf("Iteracao %d\n", i);
+            //if(tid==0 && (i%25000 == 0 || i > 2499990))
+            //    printf("Iteracao %d\n", i);
             #pragma omp for
             for(j = 0; j < n_partic; ++j) {
                 forcas[j].x(0);
                 forcas[j].y(0);
-                #pragma omp critical
                 particulas[rodada][j].vx = particulas[!rodada][j].vx;
                 particulas[rodada][j].vy = particulas[!rodada][j].vy;
                 particulas[rodada][j].x = particulas[!rodada][j].x;
@@ -108,11 +107,11 @@ int main(int argc, char* argv[]) {
                     y = (particulas[!rodada][k].y - particulas[rodada][j].y);
                     distancia_sqr = x*x + y*y;
                     distancia = sqrt(distancia_sqr);
-                    if(distancia > epsilon || distancia < particulas[!rodada][k].raio+particulas[0][j].raio)
+                    if(distancia > epsilon || distancia < particulas[0][k].raio + particulas[0][j].raio)
                         continue;
                     forca = c/distancia_sqr;
                     fx = -(x/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
-                    fy = -(y/distancia_sqr)*forca*tau*particulas[0][k].carga*particulas[0][k].carga;
+                    fy = -(y/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
                     forcas[j].add(fx, fy);
                 }
                 particulas[rodada][j].vx = particulas[!rodada][j].vx + forcas[j].x();
