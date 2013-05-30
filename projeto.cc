@@ -77,11 +77,6 @@ int main(int argc, char* argv[]) {
         file >> particulas[rodada][i].vx; file >> particulas[rodada][i].vy;
         file >> particulas[rodada][i].carga; file >> particulas[rodada][i].raio;
     }
-    /*printf("%s %f %f %f %d %d\n", argv[1], c, epsilon, tau, iters, procs);
-    printf("%d, %f, %f\n", n_partic, size_x, size_y);
-    for(i = 0; i < n_partic; ++i)
-        printf("\t%f %f %f %f %f %f\n", particulas[rodada][i].x, particulas[rodada][i].y, particulas[rodada][i].vx, particulas[rodada][i].vy, particulas[rodada][i].carga,particulas[rodada][i].raio);
-    printf("\n\n");*/
     
     #pragma omp parallel private(i, j, k, x, y, distancia, distancia_sqr, tid, rodada, fx, fy)
     {
@@ -121,31 +116,24 @@ int main(int argc, char* argv[]) {
                 particulas[rodada][j].x += particulas[rodada][j].vx*tau;
                 particulas[rodada][j].y += particulas[rodada][j].vy*tau;
                 if(particulas[rodada][j].x > size_x) {
-                    particulas[rodada][j].x = 2*size_x - particulas[rodada][j].x;
+                    particulas[rodada][j].x = 1.5*size_x - 0.5*particulas[rodada][j].x;
                     particulas[rodada][j].vx *= -0.5;
                 }
                 else if(particulas[rodada][j].x < 0) {
-                    particulas[rodada][j].x *= -1;
+                    particulas[rodada][j].x *= -0.5;
                     particulas[rodada][j].vx *= -0.5;
                 }
                 
                 if(particulas[rodada][j].y > size_y) {
-                    particulas[rodada][j].y = 2*size_y - particulas[rodada][j].y;
+                    particulas[rodada][j].y = 1.5*size_y - 0.5*particulas[rodada][j].y;
                     particulas[rodada][j].vy *= -0.5;
                 }
                 else if(particulas[rodada][j].y < 0) {
-                    particulas[rodada][j].y *= -1;
+                    particulas[rodada][j].y *= -0.5;
                     particulas[rodada][j].vy *= -0.5;
                 }
                 
             }
-            
-            /*if(tid == 0) {
-                printf("Iter %d:\n", i+1);
-                for(j = 0; j < n_partic; ++j)
-                    printf("\t%f %f %f %f %f %f\n", particulas[rodada][j].x, particulas[rodada][j].y, particulas[rodada][j].vx, particulas[rodada][j].vy, particulas[rodada][j].carga, particulas[rodada][j].raio);
-            }
-            #pragma omp barrier*/
         }
     }
     output << n_partic << " " << size_x << " " << size_y << std::endl;
