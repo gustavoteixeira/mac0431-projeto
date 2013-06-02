@@ -44,7 +44,7 @@ class Vector2D {
 };
 
 struct part {
-    double x, y, vx, vy, carga, raio;
+    double x, y, vx, vy, lx, ly, carga, raio;
 };
 
 typedef struct part particula;
@@ -69,13 +69,13 @@ int main(int argc, char* argv[]) {
     file >> n_partic;
     file >> size_x;
     file >> size_y;
-    particula particulas[2][n_partic];
+    particula particulas[n_partic];
     Vector2D forcas[n_partic];
     int iterador[n_partic];
     for(i = 0; i < n_partic; ++i) {
-        file >> particulas[rodada][i].x; file >> particulas[rodada][i].y;
-        file >> particulas[rodada][i].vx; file >> particulas[rodada][i].vy;
-        file >> particulas[rodada][i].carga; file >> particulas[rodada][i].raio;
+        file >> particulas[i].x; file >> particulas[i].y;
+        file >> particulas[i].lx; file >> particulas[i].ly;
+        file >> particulas[i].carga; file >> particulas[i].raio;
     }
     
     #pragma omp parallel private(i, j, k, x, y, distancia, distancia_sqr, tid, rodada, fx, fy)
@@ -83,54 +83,51 @@ int main(int argc, char* argv[]) {
         //tid = omp_get_thread_num();
         x = 0; y = 0; fx = 0; fy = 0; rodada = 0; distancia = 0; distancia_sqr = 0; k = 0;
         for(i = 0; i < iters; ++i) {
-            rodada = !rodada;
             #pragma omp for
             for(j = 0; j < n_partic; ++j) {
                 forcas[j].x(0);
                 forcas[j].y(0);
-                particulas[rodada][j].vx = particulas[!rodada][j].vx;
-                particulas[rodada][j].vy = particulas[!rodada][j].vy;
-                particulas[rodada][j].x = particulas[!rodada][j].x;
-                particulas[rodada][j].y = particulas[!rodada][j].y;
+                particulas[j].vx = particulas[j].lx;
+                particulas[j].vy = particulas[j].ly;
                 
                 for(k = 0; k < n_partic; ++k) {
                     if(j == k)
                         continue;
-                    x = (particulas[!rodada][k].x - particulas[rodada][j].x);
-                    y = (particulas[!rodada][k].y - particulas[rodada][j].y);
+                    x = (particulas[k].x - particulas[j].x);
+                    y = (particulas[k].y - particulas[j].y);
                     distancia_sqr = x*x + y*y;
                     distancia = sqrt(distancia_sqr);
-                    if(distancia > epsilon || distancia < particulas[0][k].raio + particulas[0][j].raio)
+                    if(distancia > epsilon || distancia < particulas[k].raio + particulas[j].raio)
                         continue;
                     forca = c/distancia_sqr;
-                    fx = -(x/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
-                    fy = -(y/distancia_sqr)*forca*tau*particulas[0][j].carga*particulas[0][k].carga;
+                    fx = -(x/distancia_sqr)*forca*tau*particulas[j].carga*particulas[k].carga;
+                    fy = -(y/distancia_sqr)*forca*tau*particulas[j].carga*particulas[k].carga;
                     forcas[j].add(fx, fy);
                 }
-                particulas[rodada][j].vx = particulas[!rodada][j].vx + forcas[j].x();
-                particulas[rodada][j].vy = particulas[!rodada][j].vy + forcas[j].y();
+                particulas[j].lx = particulas[j].vx + forcas[j].x();
+                particulas[j].ly = particulas[j].vy + forcas[j].y();
             }
             
             #pragma omp for
             for(j = 0; j < n_partic; ++j) {
-                particulas[rodada][j].x += particulas[rodada][j].vx*tau;
-                particulas[rodada][j].y += particulas[rodada][j].vy*tau;
-                if(particulas[rodada][j].x > size_x) {
-                    particulas[rodada][j].x = 1.5*size_x - 0.5*particulas[rodada][j].x;
-                    particulas[rodada][j].vx *= -0.5;
+                particulas[j].x += particulas[j].vx*tau;
+                particulas[j].y += particulas[j].vy*tau;
+                if(particulas[j].x > size_x) {
+                    particulas[j].x = 1.5*size_x - 0.5*particulas[j].x;c
+                    particulas[j].vx *= -0.5;
                 }
-                else if(particulas[rodada][j].x < 0) {
-                    particulas[rodada][j].x *= -0.5;
-                    particulas[rodada][j].vx *= -0.5;
+                else if(particulas[j].x < 0) {
+                    particulas[j].x *= -0.5;
+                    particulas[j].vx *= -0.5;
                 }
                 
-                if(particulas[rodada][j].y > size_y) {
-                    particulas[rodada][j].y = 1.5*size_y - 0.5*particulas[rodada][j].y;
-                    particulas[rodada][j].vy *= -0.5;
+                if(particulas[j].y > size_y) {
+                    particulas[j].y = 1.5*size_y - 0.5*particulas[j].y;
+                    particulas[j].vy *= -0.5;
                 }
-                else if(particulas[rodada][j].y < 0) {
-                    particulas[rodada][j].y *= -0.5;
-                    particulas[rodada][j].vy *= -0.5;
+                else if(particulas[j].y < 0) {
+                    particulas[j].y *= -0.5;
+                    particulas[j].vy *= -0.5;
                 }
                 
             }
@@ -138,9 +135,9 @@ int main(int argc, char* argv[]) {
     }
     output << n_partic << " " << size_x << " " << size_y << std::endl;
     for(i = 0; i < n_partic; ++i)
-        output << "\t" << particulas[rodada][i].x  << " " << particulas[rodada][i].y  << " " <<
-                          particulas[rodada][i].vx << " " << particulas[rodada][i].vy << " " <<
-                          particulas[rodada][i].carga << " " << particulas[rodada][i].raio << std::endl;
+        output << "\t" << particulas[i].x  << " " << particulas[i].y  << " " <<
+                          particulas[i].vx << " " << particulas[i].vy << " " <<
+                          particulas[i].carga << " " << particulas[i].raio << std::endl;
         
     output.close();
     return 0;
