@@ -6,6 +6,4 @@ Renan Teruo Carneiro                6514157
 
 Compilando:
 
-Basta usar o g++ com a flag -fopenmp para compilar:
-
-'g++ projeto.cc -fopenmp'
+Basta usar o Makefile incluso.
