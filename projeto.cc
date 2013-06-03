@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
                 particulas[j].x += particulas[j].vx*tau;
                 particulas[j].y += particulas[j].vy*tau;
                 if(particulas[j].x > size_x) {
-                    particulas[j].x = 1.5*size_x - 0.5*particulas[j].x;c
+                    particulas[j].x = 1.5*size_x - 0.5*particulas[j].x;
                     particulas[j].vx *= -0.5;
                 }
                 else if(particulas[j].x < 0) {
@@ -133,11 +133,13 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+    
+    output.precision(6);
     output << n_partic << " " << size_x << " " << size_y << std::endl;
     for(i = 0; i < n_partic; ++i)
-        output << "\t" << particulas[i].x  << " " << particulas[i].y  << " " <<
-                          particulas[i].vx << " " << particulas[i].vy << " " <<
-                          particulas[i].carga << " " << particulas[i].raio << std::endl;
+        output << "    " << particulas[i].x  << " " << particulas[i].y  << " " <<
+                            particulas[i].vx << " " << particulas[i].vy << " " <<
+                            particulas[i].carga << " " << particulas[i].raio << std::endl;
         
     output.close();
     return 0;
